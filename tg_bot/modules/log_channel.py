@@ -143,10 +143,10 @@ if is_module_loaded(FILENAME):
 
 
     __help__ = """
-*Admin only:*
-- /logchannel: get log channel info
-- /setlog: set the log channel.
-- /unsetlog: unset the log channel.
+*അഡ്‌മിൻ മാത്രം:*
+- /logchannel: ലോഗ് ചാനൽ വിവരങ്ങൾ നേടുക.
+- /setlog: ലോഗ് ചാനൽ സജ്ജമാക്കുക.
+- /unsetlog: ലോഗ് ചാനൽ സജ്ജീകരിക്കരുത്.
 
 Setting the log channel is done by:
 - adding the bot to the desired channel (as an admin!)

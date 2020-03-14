@@ -1,3 +1,4 @@
+
 import json
 from pprint import pprint
 
@@ -48,7 +49,7 @@ def translate(bot: Bot, update: Update):
 
 
 __help__ = """
- - /t: while replying to a message, will reply with a grammar corrected version
+ - /t: while replying to a message, will reply with a grammar corrected version. ഒരു സന്ദേശത്തിന് മറുപടി നൽകുമ്പോൾ, വ്യാകരണം ശരിയാക്കിയ പതിപ്പ് മറുപടി നൽകും
 """
 
 __mod_name__ = "Translator"

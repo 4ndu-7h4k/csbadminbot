@@ -216,12 +216,12 @@ def rss_set(bot, job):
 
 
 __help__ = """
- - /addrss <link>: add an RSS link to the subscriptions.
- - /removerss <link>: removes the RSS link from the subscriptions.
- - /rss <link>: shows the link's data and the last entry, for testing purposes.
- - /listrss: shows the list of rss feeds that the chat is currently subscribed to.
+ - /addrss <link>: സബ്‌സ്‌ക്രിപ്‌ഷനുകളിലേക്ക് ഒരു RSS ലിങ്ക് ചേർക്കുക.
+ - /removerss <link>: സബ്‌സ്‌ക്രിപ്‌ഷനുകളിൽ നിന്ന് RSS ലിങ്ക് നീക്കംചെയ്യുന്നു.
+ - /rss <link>: പരിശോധന ആവശ്യങ്ങൾക്കായി ലിങ്കിന്റെ ഡാറ്റയും അവസാന എൻ‌ട്രിയും കാണിക്കുന്നു.
+ - /listrss: ചാറ്റ് നിലവിൽ സബ്‌സ്‌ക്രൈബുചെയ്‌ത RSS ഫീഡുകളുടെ ലിസ്റ്റ് കാണിക്കുന്നു.
 
-NOTE: In groups, only admins can add/remove RSS links to the group's subscription
+NOTE: ഗ്രൂപ്പുകളിൽ, അഡ്‌മിനുകൾക്ക് മാത്രമേ ഗ്രൂപ്പിന്റെ സബ്‌സ്‌ക്രിപ്‌ഷനിലേക്ക് RSS ലിങ്കുകൾ ചേർക്കാനോ നീക്കംചെയ്യാനോ കഴിയൂ..
 """
 
 __mod_name__ = "RSS Feed"

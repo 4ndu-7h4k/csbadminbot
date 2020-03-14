@@ -40,7 +40,6 @@ UNGBAN_ERRORS = {
     "Not in the chat",
     "Channel_private",
     "Chat_admin_required",
-    "Peer_id_invalid",
 }
 
 
@@ -92,14 +91,20 @@ def gban(bot: Bot, update: Update, args: List[str]):
 
         return
 
-    message.reply_text("*Blows dust off of banhammer* 😉")
+    message.reply_text("⚡️ *Snaps the Banhammer* ⚡️")
 
     banner = update.effective_user  # type: Optional[User]
     send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
-                 "{} is gbanning user {} "
-                 "because:\n{}".format(mention_html(banner.id, banner.first_name),
-                                       mention_html(user_chat.id, user_chat.first_name), reason or "No reason given"),
-                 html=True)
+                 "<b>Global Ban</b>" \
+                 "\n#GBAN" \
+                 "\n<b>Status:</b> <code>Enforcing</code>" \
+                 "\n<b>Sudo Admin:</b> {}" \
+                 "\n<b>User:</b> {}" \
+                 "\n<b>ID:</b> <code>{}</code>" \
+                 "\n<b>Reason:</b> {}".format(mention_html(banner.id, banner.first_name),
+                                              mention_html(user_chat.id, user_chat.first_name), 
+                                                           user_chat.id, reason or "No reason given"), 
+                html=True)
 
     sql.gban_user(user_id, user_chat.username or user_chat.first_name, reason)
 
@@ -124,7 +129,9 @@ def gban(bot: Bot, update: Update, args: List[str]):
         except TelegramError:
             pass
 
-    send_to_list(bot, SUDO_USERS + SUPPORT_USERS, "gban complete!")
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS, 
+                  "{} has been successfully gbanned!".format(mention_html(user_chat.id, user_chat.first_name)),
+                html=True)
     message.reply_text("Person has been gbanned.")
 
 
@@ -148,11 +155,17 @@ def ungban(bot: Bot, update: Update, args: List[str]):
 
     banner = update.effective_user  # type: Optional[User]
 
-    message.reply_text("I'll give {} a second chance, globally.".format(user_chat.first_name))
+    message.reply_text("I pardon {}, globally with a second chance.".format(user_chat.first_name))
 
     send_to_list(bot, SUDO_USERS + SUPPORT_USERS,
-                 "{} has ungbanned user {}".format(mention_html(banner.id, banner.first_name),
-                                                   mention_html(user_chat.id, user_chat.first_name)),
+                 "<b>Regression of Global Ban</b>" \
+                 "\n#UNGBAN" \
+                 "\n<b>Status:</b> <code>Ceased</code>" \
+                 "\n<b>Sudo Admin:</b> {}" \
+                 "\n<b>User:</b> {}" \
+                 "\n<b>ID:</b> <code>{}</code>".format(mention_html(banner.id, banner.first_name),
+                                                       mention_html(user_chat.id, user_chat.first_name), 
+                                                                    user_chat.id),
                  html=True)
 
     chats = get_all_chats()
@@ -180,9 +193,12 @@ def ungban(bot: Bot, update: Update, args: List[str]):
 
     sql.ungban_user(user_id)
 
-    send_to_list(bot, SUDO_USERS + SUPPORT_USERS, "un-gban complete!")
+    send_to_list(bot, SUDO_USERS + SUPPORT_USERS, 
+                  "{} has been pardoned from gban!".format(mention_html(user_chat.id, 
+                                                                         user_chat.first_name)),
+                  html=True)
 
-    message.reply_text("Person has been un-gbanned.")
+    message.reply_text("This person has been un-gbanned and pardon is granted!")
 
 
 @run_async
@@ -248,10 +264,10 @@ def gbanstat(bot: Bot, update: Update, args: List[str]):
                                                 "anymore. You'll be less protected from any trolls and spammers "
                                                 "though!")
     else:
-        update.effective_message.reply_text("Give me some arguments to choose a setting! on/off, yes/no!\n\n"
-                                            "Your current setting is: {}\n"
-                                            "When True, any gbans that happen will also happen in your group. "
-                                            "When False, they won't, leaving you at the possible mercy of "
+        update.effective_message.reply_text("ഒരു ക്രമീകരണം തിരഞ്ഞെടുക്കാൻ എനിക്ക് കുറച്ച് ആർഗ്യുമെന്റുകൾ നൽകുക! on/off, yes/no!\n\n"
+                                            "നിങ്ങളുടെ നിലവിലെ ക്രമീകരണം ഇതാണ്: {}\n"
+                                            "ശരിയാണെങ്കിൽ, സംഭവിക്കുന്ന ഏതൊരു gbans ഉം നിങ്ങളുടെ ഗ്രൂപ്പിൽ സംഭവിക്കും."
+                                            "തെറ്റാണെങ്കിൽ‌, അവർ‌ സമ്മതിക്കില്ല, സ്പാമർ‌മാരുടെ കാരുണ്യത്തിൽ‌ നിങ്ങളെ ഒഴിവാക്കും."
                                             "spammers.".format(sql.does_chat_gban(update.effective_chat.id)))
 
 
@@ -282,12 +298,14 @@ def __chat_settings__(chat_id, user_id):
 
 
 __help__ = """
-*Admin only:*
- - /gbanstat <on/off/yes/no>: Will disable the effect of global bans on your group, or return your current settings.
+*അഡ്‌മിൻ മാത്രം:*
+ - /gbanstat <on/off/yes/no>: നിങ്ങളുടെ ഗ്രൂപ്പിലെ ഗ്ലോബൽ ബാൻ സജീവമാക്കുകം, 
+ അല്ലെങ്കിൽ നിങ്ങളുടെ നിലവിലെ ക്രമീകരണങ്ങൾ തിരികെ നൽകും.
 
-Gbans, also known as global bans, are used by the bot owners to ban spammers across all groups. This helps protect \
-you and your groups by removing spam flooders as quickly as possible. They can be disabled for you group by calling \
-/gbanstat
+Gbans, എല്ലാ ഗ്രൂപ്പുകളിലുമുള്ള സ്പാമർമാരെ നിരോധിക്കാൻ ബോട്ട് ഉടമകൾ ഗ്ലോബൽ ബാൻം എന്നും അറിയപ്പെടുന്ന ഗ്ബാൻസ് ഉപയോഗിക്കുന്നു. 
+സ്പാം വെള്ളപ്പൊക്കക്കാരെ എത്രയും വേഗം നീക്കംചെയ്ത് നിങ്ങളെയും നിങ്ങളുടെ ഗ്രൂപ്പുകളെയും പരിരക്ഷിക്കാൻ ഇത് സഹായിക്കുന്നു.
+/gbanstat വിളിച്ച് നിങ്ങളുടെ ഗ്രൂപ്പിനായി അവ പ്രവർത്തനരഹിതമാക്കാം \
+
 """
 
 __mod_name__ = "Global Bans"

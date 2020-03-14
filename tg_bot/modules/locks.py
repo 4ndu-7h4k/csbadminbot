@@ -14,18 +14,18 @@ from tg_bot import dispatcher, SUDO_USERS, LOGGER
 from tg_bot.modules.disable import DisableAbleCommandHandler
 from tg_bot.modules.helper_funcs.chat_status import can_delete, is_user_admin, user_not_admin, user_admin, \
     bot_can_delete, is_bot_admin
+from tg_bot.modules.helper_funcs.filters import CustomFilters
 from tg_bot.modules.log_channel import loggable
 from tg_bot.modules.sql import users_sql
 
 LOCK_TYPES = {'sticker': Filters.sticker,
               'audio': Filters.audio,
               'voice': Filters.voice,
-              'document': Filters.document & ~Filters.animation,
+              'document': Filters.document,
               'video': Filters.video,
-              'videonote': Filters.video_note,
               'contact': Filters.contact,
               'photo': Filters.photo,
-              'gif': Filters.animation,
+              'gif': Filters.document & CustomFilters.mime_type("video/mp4"),
               'url': Filters.entity(MessageEntity.URL) | Filters.caption_entity(MessageEntity.URL),
               'bots': Filters.status_update.new_chat_members,
               'forward': Filters.forwarded,
@@ -33,9 +33,9 @@ LOCK_TYPES = {'sticker': Filters.sticker,
               'location': Filters.location,
               }
 
-GIF = Filters.animation
+GIF = Filters.document & CustomFilters.mime_type("video/mp4")
 OTHER = Filters.game | Filters.sticker | GIF
-MEDIA = Filters.audio | Filters.document | Filters.video | Filters.video_note | Filters.voice | Filters.photo
+MEDIA = Filters.audio | Filters.document | Filters.video | Filters.voice | Filters.photo
 MESSAGES = Filters.text | Filters.contact | Filters.location | Filters.venue | Filters.command | MEDIA | OTHER
 PREVIEWS = Filters.entity("url")
 
@@ -106,7 +106,7 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
         if len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=True)
-                message.reply_text("Locked {} messages for all non-admins!".format(args[0]))
+                message.reply_text("ഞാൻ {} ലോക്ക് ചെയ്തു. അഡ്മിൻ അല്ലാത്തവർക്ക് ഇനി അയക്കുവാൻ സാധിക്കില്ല.!".format(args[0]))
 
                 return "<b>{}:</b>" \
                        "\n#LOCK" \
@@ -120,7 +120,7 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
                     members = users_sql.get_chat_members(str(chat.id))
                     restr_members(bot, chat.id, members, messages=True, media=True, other=True)
 
-                message.reply_text("Locked {} for all non-admins!".format(args[0]))
+                message.reply_text("ഞാൻ {} ലോക്ക് ചെയ്തു. അഡ്മിൻ അല്ലാത്തവർക്ക് ഇനി അയക്കുവാൻ സാധിക്കില്ല.!".format(args[0]))
                 return "<b>{}:</b>" \
                        "\n#LOCK" \
                        "\n<b>Admin:</b> {}" \
@@ -128,10 +128,10 @@ def lock(bot: Bot, update: Update, args: List[str]) -> str:
                                                           mention_html(user.id, user.first_name), args[0])
 
             else:
-                message.reply_text("What are you trying to lock...? Try /locktypes for the list of lockables")
+                message.reply_text("നിങ്ങൾ എന്താണ് ലോക്ക് ചെയ്യാൻ ശ്രമിക്കുന്നത് ...? /locktypes ലോക്ക് ടൈപ്പ് നോക്കിയിട്ട് അയക്കു..")
 
     else:
-        message.reply_text("I'm not an administrator, or haven't got delete rights.")
+        message.reply_text("ഞാൻ ഒരു അഡ്മിനിസ്ട്രേറ്റർ അല്ല, അല്ലെങ്കിൽ എനിക്ക് ലോക്ക് ചെയ്യാൻ ഉള്ള പരിമിതികൾ തന്നിട്ടില്ല.")
 
     return ""
 
@@ -147,7 +147,7 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
         if len(args) >= 1:
             if args[0] in LOCK_TYPES:
                 sql.update_lock(chat.id, args[0], locked=False)
-                message.reply_text("Unlocked {} for everyone!".format(args[0]))
+                message.reply_text("ഞാൻ {} അൺലോക്ക് ചെയ്തിട്ടുണ്ട്. ഇനി എല്ലാവർക്കും ഇവിടെ അയക്കാം..".format(args[0]))
                 return "<b>{}:</b>" \
                        "\n#UNLOCK" \
                        "\n<b>Admin:</b> {}" \
@@ -173,7 +173,7 @@ def unlock(bot: Bot, update: Update, args: List[str]) -> str:
                 elif args[0] == "all":
                     unrestr_members(bot, chat.id, members, True, True, True, True)
                 """
-                message.reply_text("Unlocked {} for everyone!".format(args[0]))
+                message.reply_text("ഞാൻ {} അൺലോക്ക് ചെയ്തിട്ടുണ്ട്. ഇനി എല്ലാവർക്കും ഇവിടെ അയക്കാം..".format(args[0]))
 
                 return "<b>{}:</b>" \
                        "\n#UNLOCK" \
@@ -241,7 +241,7 @@ def build_lock_message(chat_id):
     locks = sql.get_locks(chat_id)
     restr = sql.get_restr(chat_id)
     if not (locks or restr):
-        res = "There are no current locks in this chat."
+        res = "ഈ ചാറ്റിൽ നിലവിൽ ലോക്കുകളൊന്നുമില്ല.."
     else:
         res = "These are the locks in this chat:"
         if locks:
@@ -250,7 +250,6 @@ def build_lock_message(chat_id):
                    "\n - voice = `{}`" \
                    "\n - document = `{}`" \
                    "\n - video = `{}`" \
-                   "\n - videonote = `{}`" \
                    "\n - contact = `{}`" \
                    "\n - photo = `{}`" \
                    "\n - gif = `{}`" \
@@ -259,7 +258,7 @@ def build_lock_message(chat_id):
                    "\n - forward = `{}`" \
                    "\n - game = `{}`" \
                    "\n - location = `{}`".format(locks.sticker, locks.audio, locks.voice, locks.document,
-                                                 locks.video, locks.videonote, locks.contact, locks.photo, locks.gif, locks.url,
+                                                 locks.video, locks.contact, locks.photo, locks.gif, locks.url,
                                                  locks.bots, locks.forward, locks.game, locks.location)
         if restr:
             res += "\n - messages = `{}`" \
@@ -290,18 +289,18 @@ def __chat_settings__(chat_id, user_id):
 
 
 __help__ = """
- - /locktypes: a list of possible locktypes
+ - /locktypes: സാധ്യമായ ലോക്ക് ടൈപ്പുകളുടെ ഒരു പട്ടിക..
 
-*Admin only:*
- - /lock <type>: lock items of a certain type (not available in private)
- - /unlock <type>: unlock items of a certain type (not available in private)
- - /locks: the current list of locks in this chat.
+*അഡ്‌മിൻ മാത്രം:*
+ - /lock <type>: ഒരു പ്രത്യേക തരത്തിലുള്ള ലോക്ക് ഇനങ്ങൾ (സ്വകാര്യമായി ലഭ്യമല്ല)..
+ - /unlock <type>: ഒരു പ്രത്യേക തരം ഇനങ്ങൾ അൺലോക്കുചെയ്യുക (സ്വകാര്യമായി ലഭ്യമല്ല) ..
+ - /locks: ഈ ചാറ്റിലെ ലോക്കുകളുടെ നിലവിലെ പട്ടിക.
 
-Locks can be used to restrict a group's users.
-eg:
-Locking urls will auto-delete all messages with urls, locking stickers will delete all \
-stickers, etc.
-Locking bots will stop non-admins from adding bots to the chat.
+ഒരു ഗ്രൂപ്പിന്റെ ഉപയോക്താക്കളെ നിയന്ത്രിക്കാൻ ലോക്കുകൾ ഉപയോഗിക്കാം. 
+ഉദാ:
+യു‌ആർ‌എൽ‌ ലോക്കുചെയ്യുന്നത് വൈറ്റ്‌ലിസ്റ്റ് ചെയ്യാത്ത url കളുള്ള എല്ലാ സന്ദേശങ്ങളും യാന്ത്രികമായി ഇല്ലാതാക്കും, 
+ലോക്കുചെയ്യുന്ന സ്റ്റിക്കറുകൾ‌ എല്ലാ സ്റ്റിക്കറുകളും ഇല്ലാതാക്കും. 
+ബോട്ടുകൾ ലോക്കുചെയ്യുന്നത് അഡ്മിൻ അല്ലാത്തവരെ ചാറ്റിലേക്ക് ബോട്ടുകൾ ചേർക്കുന്നതിൽ നിന്ന് തടയും.
 """
 
 __mod_name__ = "Locks"

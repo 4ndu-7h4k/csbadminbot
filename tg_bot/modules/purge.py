@@ -22,13 +22,10 @@ def purge(bot: Bot, update: Update, args: List[str]) -> str:
         chat = update.effective_chat  # type: Optional[Chat]
         if can_delete(chat, bot.id):
             message_id = msg.reply_to_message.message_id
-            delete_to = msg.message_id - 1
             if args and args[0].isdigit():
-                new_del = message_id + int(args[0])
-                # No point deleting messages which haven't been written yet.
-                if new_del < delete_to:
-                    delete_to = new_del
-
+                delete_to = message_id + int(args[0])
+            else:
+                delete_to = msg.message_id - 1
             for m_id in range(delete_to, message_id - 1, -1):  # Reverse iteration over message ids
                 try:
                     bot.deleteMessage(chat.id, m_id)
@@ -50,7 +47,6 @@ def purge(bot: Bot, update: Update, args: List[str]) -> str:
                 elif err.message != "Message to delete not found":
                     LOGGER.exception("Error while purging chat messages.")
 
-            bot.send_message(chat.id, "Purge complete.")
             return "<b>{}:</b>" \
                    "\n#PURGE" \
                    "\n<b>Admin:</b> {}" \
@@ -86,10 +82,10 @@ def del_message(bot: Bot, update: Update) -> str:
 
 
 __help__ = """
-*Admin only:*
- - /del: deletes the message you replied to
- - /purge: deletes all messages between this and the replied to message.
- - /purge <integer X>: deletes the replied message, and X messages following it.
+*അഡ്‌മിൻ മാത്രം:*
+ - /del: നിങ്ങൾ മറുപടി നൽകിയ സന്ദേശം ഇല്ലാതാക്കുന്നു
+ - /purge: ഇതിനും സന്ദേശത്തിന് മറുപടി നൽകിയതും തമ്മിലുള്ള എല്ലാ സന്ദേശങ്ങളും ഇല്ലാതാക്കുന്നു.
+ - /purge <integer X>: മറുപടി നൽകിയ സന്ദേശവും അത് പിന്തുടരുന്ന X സന്ദേശങ്ങളും ഇല്ലാതാക്കുന്നു.
 """
 
 __mod_name__ = "Purges"
