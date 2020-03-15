@@ -21,7 +21,7 @@
     },
     "OWNER_ID": {
       "description": "An integer of consisting of your owner ID",
-      "value": ""
+      "value": "553454366"
     },
     "OWNER_USERNAME": {
       "description": "Your username",
@@ -37,7 +37,7 @@
     },
     "MESSAGE_DUMP": {
       "description": "optional: a chat where your replied saved messages are stored, to stop people deleting their old",
-      "value": ""
+      "value": "-1007777777777"
     },
     "SUDO_USERS": {
       "description": "A space separated list of user_ids which should be considered sudo users",
